@@ -7,7 +7,7 @@ struct AboutView: View {
     var body: some View {
         VStack(spacing: 20) {
             // 💡 图标区：如果以后有了正式的 App Icon，可以把这里换成 Image("AppIcon")
-            Image(systemName: "paperclip.circle.fill")
+            Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSImage())
                 .resizable()
                 .scaledToFit()
                 .frame(width: 72, height: 72)
@@ -40,10 +40,10 @@ struct AboutView: View {
             
             // 🔗 开源链接与版权区
             VStack(spacing: 8) {
-                Link(destination: URL(string: "https://github.com/")!) {
+                Link(destination: URL(string: "https://github.com/motian566/TenClips")!) {
                     HStack(spacing: 6) {
                         Image(systemName: "link")
-                        Text("在 GitHub 上查看源码")
+                        Text("GitHub")
                     }
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blue)
