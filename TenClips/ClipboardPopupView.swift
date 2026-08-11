@@ -31,14 +31,11 @@ struct ClipboardPopupView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.14))
-                Image(systemName: "paperclip")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-            }
+            Image(systemName: "paperclip")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.primary)
             .frame(width: 32, height: 32)
+            .glassLogo()
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("TenClips")
@@ -150,6 +147,16 @@ struct ClipboardPopupView: View {
 }
 
 private extension View {
+    @ViewBuilder
+    func glassLogo() -> some View {
+        if #available(macOS 26.0, *) {
+            glassEffect(.regular, in: Circle())
+        } else {
+            background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.18)))
+        }
+    }
+
     @ViewBuilder
     func glassControl() -> some View {
         if #available(macOS 26.0, *) {

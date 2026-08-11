@@ -27,7 +27,7 @@ struct AboutView: View {
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                 
                 // 可以配合 Xcode 里的 Version 和 Build 号自动读取
-                Text("Version 1.0.0")
+                Text("Version 1.2.0")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.secondary)
             }
