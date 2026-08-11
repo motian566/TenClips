@@ -1,155 +1,151 @@
 import SwiftUI
 
-// MARK: - 1. 快捷窗按钮反馈
-struct LiquidGlassButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(10)
-            .background(
-                Color.primary.opacity(configuration.isPressed ? 0.12 : 0.055),
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.08))
-            }
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
-    }
-}
-
-// MARK: - 2. 主视图
 struct ClipboardPopupView: View {
     @ObservedObject var manager: ClipboardManager
 
     var body: some View {
         VStack(spacing: 0) {
-            // 🛠️ 顶栏控制区
-            HStack {
-                Button(action: {
-                    withAnimation(.spring()) { manager.items.removeAll() }
-                }) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(Color.primary.opacity(0.7))
-                        .frame(width: 26, height: 26)
-                        .glassControl()
-                }
-                .buttonStyle(.plain)
-                .help("清空全部记录")
+            header
 
-                Spacer()
-                Text("TenClips")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundColor(Color.primary.opacity(0.7))
-                Spacer()
+            Divider()
+                .opacity(0.45)
+                .padding(.horizontal, 14)
 
-                Button(action: {
-                    FloatingPanelManager.shared.hide()
-                }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(Color.primary.opacity(0.7))
-                        .frame(width: 26, height: 26)
-                        .glassControl()
-                }
-                .buttonStyle(.plain)
+            content
+
+            Divider()
+                .opacity(0.45)
+                .padding(.horizontal, 14)
+
+            footer
+        }
+        .frame(width: 380)
+        .popupSurface()
+        .shadow(color: .black.opacity(0.22), radius: 24, x: 0, y: 12)
+        .padding(30)
+        .fixedSize(horizontal: true, vertical: true)
+        .onExitCommand {
+            FloatingPanelManager.shared.hide()
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.14))
+                Image(systemName: "paperclip")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
             }
-            .padding(.bottom, 12)
-            
-            // 📜 剪贴板内容列表
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 10) {
-                    if manager.items.isEmpty {
-                        Text("剪贴板空空如也")
-                            .font(.system(size: 13, design: .rounded))
-                            .foregroundColor(.secondary)
-                            // 👇 这里同步调小，让空文本在更短的窗口里也能完美居中
-                            .frame(height: 180)
-                    } else {
-                        ForEach(manager.items) { item in
-                            ZStack(alignment: .topTrailing) {
-                                Button(action: {
-                                    manager.copyToPasteboard(item)
-                                    FloatingPanelManager.shared.hide()
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        manager.simulatePaste()
-                                    }
-                                }) {
-                                    HStack {
-                                        if item.type == .text, let text = item.text {
-                                            let cleanText = getCleanText(text)
-                                            Text(cleanText)
-                                                .lineLimit(2)
-                                                .multilineTextAlignment(.leading)
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
-                                                .foregroundColor(.primary.opacity(0.9))
-                                        } else if item.type == .image, item.image != nil {
-                                            ClipboardThumbnail(item: item, size: CGSize(width: 220, height: 90))
-                                        } else if item.type == .mixed, let text = item.text, item.image != nil {
-                                            let cleanText = getCleanText(text)
-                                            VStack(alignment: .leading, spacing: 6) {
-                                                if !cleanText.isEmpty {
-                                                    Text(cleanText)
-                                                        .lineLimit(1)
-                                                        .multilineTextAlignment(.leading)
-                                                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                                                        .foregroundColor(.primary.opacity(0.9))
-                                                }
-                                                ClipboardThumbnail(item: item, size: CGSize(width: 220, height: 70))
-                                            }
-                                        }
-                                        Spacer(minLength: 30)
-                                    }
-                                }
-                                .buttonStyle(LiquidGlassButtonStyle())
-                                
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        manager.deleteItem(item)
-                                    }
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 15))
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-                                .contentShape(Circle())
-                                .zIndex(1)
-                                .padding(.top, 8)
-                                .padding(.trailing, 8)
+            .frame(width: 32, height: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("TenClips")
+                    .font(.system(size: 14, weight: .semibold))
+                Text(manager.items.isEmpty ? "等待新的复制内容" : "最近 \(manager.items.count) 条剪贴板记录")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if !manager.items.isEmpty {
+                Button {
+                    withAnimation(.snappy) {
+                        manager.items.removeAll()
+                    }
+                } label: {
+                    Image(systemName: "trash")
+                        .frame(width: 28, height: 28)
+                }
+                .buttonStyle(.plain)
+                .glassControl()
+                .help("清空全部记录")
+                .accessibilityLabel("清空全部记录")
+            }
+
+            Button {
+                FloatingPanelManager.shared.hide()
+            } label: {
+                Image(systemName: "xmark")
+                    .fontWeight(.semibold)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .glassControl()
+            .help("关闭")
+            .accessibilityLabel("关闭")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 13)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if manager.items.isEmpty {
+            VStack(spacing: 11) {
+                Image(systemName: "clipboard")
+                    .font(.system(size: 32, weight: .light))
+                    .foregroundStyle(.secondary)
+
+                VStack(spacing: 4) {
+                    Text("剪贴板空空如也")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("复制文本或图片后会自动出现在这里")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 300)
+        } else {
+            ScrollView(.vertical, showsIndicators: true) {
+                LazyVStack(spacing: 8) {
+                    ForEach(manager.items) { item in
+                        ClipboardMenuRow(item: item) {
+                            paste(item)
+                        } onDelete: {
+                            withAnimation(.snappy) {
+                                manager.deleteItem(item)
                             }
                         }
                     }
                 }
-                .padding(.horizontal, 2)
-                .padding(.bottom, 4)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
             }
-            // 👇 这里将之前的 360 缩短成了 240，让面板变得更精致紧凑
-            .frame(height: 240)
+            .frame(height: 326)
         }
-        .padding(16)
-        .frame(width: 320)
-        .background(
-            .regularMaterial,
-            in: RoundedRectangle(cornerRadius: 24, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.1))
-        )
-        .shadow(color: Color.black.opacity(0.25), radius: 25, x: 0, y: 15)
-        .padding(85)
-        .fixedSize(horizontal: true, vertical: true)
     }
-    
-    private func getCleanText(_ rawText: String) -> String {
-        return rawText
-            .replacingOccurrences(of: "\u{FFFC}", with: "")
-            .replacingOccurrences(of: "\u{FFFD}", with: "")
-            .components(separatedBy: .newlines)
-            .joined(separator: " ")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    private var footer: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "cursorarrow.click")
+            Text("点按记录即可粘贴")
+
+            Spacer()
+
+            Text("⌃⌘V")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.primary.opacity(0.06), in: Capsule())
+
+            Text("Esc 关闭")
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 11)
+    }
+
+    private func paste(_ item: ClipboardItem) {
+        manager.copyToPasteboard(item)
+        FloatingPanelManager.shared.hide()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            manager.simulatePaste()
+        }
     }
 }
 
@@ -161,6 +157,18 @@ private extension View {
         } else {
             background(.ultraThinMaterial, in: Circle())
                 .overlay(Circle().strokeBorder(Color.white.opacity(0.18)))
+        }
+    }
+
+    @ViewBuilder
+    func popupSurface() -> some View {
+        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+        if #available(macOS 26.0, *) {
+            glassEffect(.regular, in: shape)
+                .overlay(shape.strokeBorder(Color.primary.opacity(0.08)))
+        } else {
+            background(.regularMaterial, in: shape)
+                .overlay(shape.strokeBorder(Color.white.opacity(0.18)))
         }
     }
 }
