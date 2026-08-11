@@ -1,61 +1,61 @@
 {
   "images" : [
     {
-      "filename" : "huixingzhen 16.png",
+      "filename" : "1024-iOS-Default-16x16@1x.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
-      "filename" : "huixingzhen 33.png",
+      "filename" : "1024-iOS-Default-32x32@1x 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
-      "filename" : "huixingzhen 32.png",
+      "filename" : "1024-iOS-Default-32x32@1x.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
-      "filename" : "huixingzhen 64.png",
+      "filename" : "1024-iOS-Default-32x32@2x.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
-      "filename" : "huixingzhen 128.png",
+      "filename" : "1024-iOS-Default-128x128@1x.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
-      "filename" : "huixingzhen 256.png",
+      "filename" : "1024-iOS-Default-256x256@1x 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
-      "filename" : "huixingzhen 257.png",
+      "filename" : "1024-iOS-Default-256x256@1x.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
-      "filename" : "huixingzhen-2 1.png",
+      "filename" : "1024-iOS-Default-512x512@1x.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
-      "filename" : "huixingzhen-2.png",
+      "filename" : "1024-iOS-Default-512x512@1x 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "huixingzhen 1024.png",
+      "filename" : "1024-iOS-Default-1024x1024@1x.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"

@@ -1,23 +1,18 @@
 import SwiftUI
 
-// MARK: - 1. 液态玻璃按钮样式 (深色底座版)
+// MARK: - 1. 快捷窗按钮反馈
 struct LiquidGlassButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(10)
-            .background(Color.black.opacity(configuration.isPressed ? 0.2 : 0.12))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.4), .clear, Color.white.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: configuration.isPressed ? 1.5 : 1.0
-                    )
+            .background(
+                Color.primary.opacity(configuration.isPressed ? 0.12 : 0.055),
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08))
+            }
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
@@ -38,9 +33,7 @@ struct ClipboardPopupView: View {
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Color.primary.opacity(0.7))
                         .frame(width: 26, height: 26)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .overlay(Circle().stroke(LinearGradient(colors: [Color.white.opacity(0.6), .clear, Color.white.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
-                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                        .glassControl()
                 }
                 .buttonStyle(.plain)
                 .help("清空全部记录")
@@ -58,9 +51,7 @@ struct ClipboardPopupView: View {
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Color.primary.opacity(0.7))
                         .frame(width: 26, height: 26)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .overlay(Circle().stroke(LinearGradient(colors: [Color.white.opacity(0.6), .clear, Color.white.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
-                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                        .glassControl()
                 }
                 .buttonStyle(.plain)
             }
@@ -93,14 +84,9 @@ struct ClipboardPopupView: View {
                                                 .multilineTextAlignment(.leading)
                                                 .font(.system(size: 13, weight: .medium, design: .rounded))
                                                 .foregroundColor(.primary.opacity(0.9))
-                                        } else if item.type == .image, let img = item.image {
-                                            Image(nsImage: img)
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(maxHeight: 90)
-                                                .cornerRadius(6)
-                                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.2), lineWidth: 1))
-                                        } else if item.type == .mixed, let text = item.text, let img = item.image {
+                                        } else if item.type == .image, item.image != nil {
+                                            ClipboardThumbnail(item: item, size: CGSize(width: 220, height: 90))
+                                        } else if item.type == .mixed, let text = item.text, item.image != nil {
                                             let cleanText = getCleanText(text)
                                             VStack(alignment: .leading, spacing: 6) {
                                                 if !cleanText.isEmpty {
@@ -110,12 +96,7 @@ struct ClipboardPopupView: View {
                                                         .font(.system(size: 12, weight: .medium, design: .rounded))
                                                         .foregroundColor(.primary.opacity(0.9))
                                                 }
-                                                Image(nsImage: img)
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(maxHeight: 70)
-                                                    .cornerRadius(6)
-                                                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                                ClipboardThumbnail(item: item, size: CGSize(width: 220, height: 70))
                                             }
                                         }
                                         Spacer(minLength: 30)
@@ -130,7 +111,7 @@ struct ClipboardPopupView: View {
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 15))
-                                        .foregroundColor(Color.white.opacity(0.4))
+                                        .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
                                 .contentShape(Circle())
@@ -150,12 +131,12 @@ struct ClipboardPopupView: View {
         .padding(16)
         .frame(width: 320)
         .background(
-            .ultraThinMaterial,
+            .regularMaterial,
             in: RoundedRectangle(cornerRadius: 24, style: .continuous)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(LinearGradient(colors: [.white.opacity(0.4), .clear, .white.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1))
         )
         .shadow(color: Color.black.opacity(0.25), radius: 25, x: 0, y: 15)
         .padding(85)
@@ -169,5 +150,17 @@ struct ClipboardPopupView: View {
             .components(separatedBy: .newlines)
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func glassControl() -> some View {
+        if #available(macOS 26.0, *) {
+            glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.18)))
+        }
     }
 }
